@@ -533,76 +533,83 @@ class _MoodSelectorState extends State<MoodSelector>
       appBar: AppBar(
         title: Text('Selecciona tu estado de ánimo'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            DropdownButton<String>(
-              value: _selectedMood,
-              hint: Text('Selecciona un estado de ánimo'),
-              items: <String>[
-                'Feliz',
-                'Triste',
-                'Enojado',
-                'Confundido',
-                'Cansado'
-              ].map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Row(
-                    children: <Widget>[
-                      Image.asset('assets/images/$value.png',
-                          width: 25), // Añade esta línea
-                      SizedBox(
-                          width:
-                              10), // Añade esta línea para dar un poco de espacio
-                      Text(value),
-                    ],
-                  ),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedMood = newValue;
-                  switch (_selectedMood) {
-                    case 'Feliz':
-                      _message = '¡Genial, sigue así!';
-                      break;
-                    case 'Triste':
-                      _message = 'Espero que te sientas mejor pronto.';
-                      break;
-                    case 'Enojado':
-                      _message = 'Respira hondo y trata de calmarte.';
-                      break;
-                    case 'Confundido':
-                      _message =
-                          'Tómate un momento para aclarar tus pensamientos.';
-                      break;
-                    case 'Cansado':
-                      _message = 'Asegúrate de descansar bien.';
-                      break;
-                  }
-                });
-                _controller.reset();
-                _controller.forward();
-              },
-            ),
-            if (_message != null)
-              FadeTransition(
-                opacity: _animation,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    _message!,
-                    style: TextStyle(fontSize: 24),
-                    textAlign: TextAlign.center,
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('./assets/images/background-chansa.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              DropdownButton<String>(
+                value: _selectedMood,
+                hint: Text('Selecciona un estado de ánimo'),
+                items: <String>[
+                  'Feliz',
+                  'Triste',
+                  'Enojado',
+                  'Confundido',
+                  'Cansado'
+                ].map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Row(
+                      children: <Widget>[
+                        Image.asset('assets/images/$value.png',
+                            width: 25), // Añade esta línea
+                        SizedBox(
+                            width:
+                                10), // Añade esta línea para dar un poco de espacio
+                        Text(value),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedMood = newValue;
+                    switch (_selectedMood) {
+                      case 'Feliz':
+                        _message = '¡Genial, sigue así!';
+                        break;
+                      case 'Triste':
+                        _message = 'Espero que te sientas mejor pronto.';
+                        break;
+                      case 'Enojado':
+                        _message = 'Respira hondo y trata de calmarte.';
+                        break;
+                      case 'Confundido':
+                        _message =
+                            'Tómate un momento para aclarar tus pensamientos.';
+                        break;
+                      case 'Cansado':
+                        _message = 'Asegúrate de descansar bien.';
+                        break;
+                    }
+                  });
+                  _controller.reset();
+                  _controller.forward();
+                },
+              ),
+              if (_message != null)
+                FadeTransition(
+                  opacity: _animation,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      _message!,
+                      style: TextStyle(fontSize: 24),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
-
