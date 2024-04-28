@@ -18,17 +18,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     var appState =
         Provider.of<MyAppState>(context); // Obtener el estado de la aplicación
-    return ChangeNotifierProvider(
-      create: (context) => appState,
-      child: MaterialApp(
-        title: 'Chansa',
-        theme: appState.isDarkMode
-            ? ThemeData.dark()
-            : appState.isLightMode
-                ? ThemeData.light()
-                : ThemeData.light(),
-        home: MyHomePage(),
-      ),
+    return MaterialApp(
+      title: 'Chansa',
+      theme: appState.currentTheme,
+      home: MyHomePage(),
     );
   }
 }
@@ -37,13 +30,15 @@ class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   var history = <WordPair>[];
   var _darkMode = false;
-  var _lightMode = true;
+
   bool get isDarkMode => _darkMode;
   bool get isLightMode => !_darkMode;
 
-  void updateTheme(bool isDarkMode, [bool isLightMode = false]) {
+  ThemeData get currentTheme =>
+      _darkMode ? ThemeData.dark() : ThemeData.light();
+
+  void updateTheme(bool isDarkMode) {
     _darkMode = isDarkMode;
-    _lightMode = !isDarkMode;
     notifyListeners();
   }
 
@@ -331,8 +326,10 @@ class FavoritesPage extends StatelessWidget {
 class DarkPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Text('Modo oscuro'),
+    return Center(
+      child: Text(
+        'Modo oscuro',
+      ),
     );
   }
 }
@@ -343,55 +340,46 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State {
-  bool _darkMode = false;
-  bool _lightMode = true;
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: _darkMode
-          ? ThemeData.dark()
-          : _lightMode
-              ? ThemeData.light()
-              : ThemeData.light(),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Configuración'),
-        ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Modo oscuro'), // Aquí se agrega el texto "Modo oscuro"
-                Switch(
-                  value: _darkMode,
-                  onChanged: (value) {
-                    setState(() {
-                      _darkMode = value;
-                      _lightMode = !value;
-                    });
-                    // Notificar a los widgets que escuchan el tema sobre el cambio
-                    Provider.of<MyAppState>(context, listen: false)
-                        .updateTheme(_darkMode);
-                    Provider.of<MyAppState>(context, listen: false)
-                        .updateTheme(_lightMode);
-                  },
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Configuración'),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Modo oscuro',
+                style: TextStyle(
+                  fontSize: 20.0, // Cambia el tamaño de la fuente
+                  fontWeight: FontWeight.bold, // Hace que la fuente sea negrita
+                  color: Colors.blue, // Cambia el color del texto
                 ),
-              ],
-            ),
-            AboutDialog(
-              applicationName: 'Chansa',
-              applicationVersion: '1.0.0',
-              applicationIcon: Icon(Icons.favorite),
-              children: [
-                Text('Chansa es una aplicación de prueba.'),
-                Text('Hecha por: Chansa'),
-              ],
-            ),
-          ],
-        ),
+              ),
+              Switch(
+                value: Provider.of<MyAppState>(context).isDarkMode,
+                onChanged: (value) {
+                  // Notificar a los widgets que escuchan el tema sobre el cambio
+                  Provider.of<MyAppState>(context, listen: false)
+                      .updateTheme(value);
+                },
+              ),
+            ],
+          ),
+          AboutDialog(
+            applicationName: 'Chansa',
+            applicationVersion: '1.0.0',
+            applicationIcon: Icon(Icons.favorite),
+            children: [
+              Text('Chansa es una aplicación de prueba.'),
+              Text('Hecha por: Chansa'),
+            ],
+          ),
+        ],
       ),
     );
   }
