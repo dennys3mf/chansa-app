@@ -1,6 +1,8 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:math';
+import 'package:page_transition/page_transition.dart';
 
 void main() {
   runApp(
@@ -30,6 +32,14 @@ class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   var history = <WordPair>[];
   var _darkMode = false;
+
+  String mood = 'Desconocido';
+  void predictMood() {
+    var moods = ['Feliz', 'Triste', 'Enojado', 'Confundido', 'Cansado'];
+    var random = Random();
+    mood = moods[random.nextInt(moods.length)];
+    notifyListeners();
+  }
 
   bool get isDarkMode => _darkMode;
   bool get isLightMode => !_darkMode;
@@ -70,6 +80,17 @@ class MyAppState extends ChangeNotifier {
   }
 }
 
+class MoodDisplay extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<MyAppState>(
+      builder: (context, appState, child) {
+        return Text('Estado de ánimo: ${appState.mood}');
+      },
+    );
+  }
+}
+
 class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -92,6 +113,9 @@ class _MyHomePageState extends State<MyHomePage> {
         break;
       case 2:
         page = SettingsPage();
+        break;
+      case 3:
+        page = MoodSelector();
         break;
       default:
         throw UnimplementedError('No hay widget para $selectedIndex');
@@ -118,19 +142,39 @@ class _MyHomePageState extends State<MyHomePage> {
                 Expanded(child: mainArea),
                 SafeArea(
                   child: BottomNavigationBar(
-                    items: [
+                     items: [
                       BottomNavigationBarItem(
-                        icon: Icon(Icons.home),
+                        icon: Icon(Icons.home,
+                            color: Colors.black), // Forzar el color del ícono
                         label: 'Inicio',
+                            backgroundColor:
+                            Colors.white, // Forzar el color de fondo
+  
                       ),
                       BottomNavigationBarItem(
-                        icon: Icon(Icons.favorite),
+                        icon: Icon(Icons.favorite,
+                            color: Colors.black), // Forzar el color del ícono
                         label: 'Favoritos',
+                            backgroundColor:
+                            Colors.white, // Forzar el color de fondo
+  
                       ),
                       BottomNavigationBarItem(
-                        icon: Icon(Icons.settings),
+                        icon: Icon(Icons.settings,
+                            color: Colors.black), // Forzar el color del ícono
                         label: 'Configuración',
-                      )
+                              backgroundColor:
+                            Colors.white, // Forzar el color de fondo
+
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.mood,
+                            color: Colors.black), // Forzar el color del ícono
+                        label: 'Estado de ánimo',
+                              backgroundColor:
+                            Colors.white, // Forzar el color de fondo
+
+                      ),
                     ],
                     currentIndex: selectedIndex,
                     onTap: (value) {
@@ -138,6 +182,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         selectedIndex = value;
                       });
                     },
+                    selectedItemColor:
+                        Colors.black, // Forzar el color del ítem seleccionado
+                    unselectedItemColor:
+                        Colors.grey, // Forzar el color del ítem no seleccionado
                   ),
                 )
               ],
@@ -160,6 +208,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       NavigationRailDestination(
                         icon: Icon(Icons.settings),
                         label: Text('Configuración'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.mood),
+                        label: Text('Estado de ánimo'),
                       ),
                     ],
                     selectedIndex: selectedIndex,
@@ -336,6 +388,7 @@ class DarkPage extends StatelessWidget {
 
 class SettingsPage extends StatefulWidget {
   @override
+  // ignore: library_private_types_in_public_api
   _SettingsPageState createState() => _SettingsPageState();
 }
 
@@ -446,3 +499,110 @@ class _HistoryListViewState extends State<HistoryListView> {
     );
   }
 }
+class MoodSelector extends StatefulWidget {
+  @override
+  _MoodSelectorState createState() => _MoodSelectorState();
+}
+
+class _MoodSelectorState extends State<MoodSelector>
+    with TickerProviderStateMixin {
+  String? _selectedMood;
+  String? _message;
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _animation = Tween<double>(begin: 0, end: 1).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Selecciona tu estado de ánimo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            DropdownButton<String>(
+              value: _selectedMood,
+              hint: Text('Selecciona un estado de ánimo'),
+              items: <String>[
+                'Feliz',
+                'Triste',
+                'Enojado',
+                'Confundido',
+                'Cansado'
+              ].map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Row(
+                    children: <Widget>[
+                      Image.asset('assets/images/$value.png',
+                          width: 25), // Añade esta línea
+                      SizedBox(
+                          width:
+                              10), // Añade esta línea para dar un poco de espacio
+                      Text(value),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedMood = newValue;
+                  switch (_selectedMood) {
+                    case 'Feliz':
+                      _message = '¡Genial, sigue así!';
+                      break;
+                    case 'Triste':
+                      _message = 'Espero que te sientas mejor pronto.';
+                      break;
+                    case 'Enojado':
+                      _message = 'Respira hondo y trata de calmarte.';
+                      break;
+                    case 'Confundido':
+                      _message =
+                          'Tómate un momento para aclarar tus pensamientos.';
+                      break;
+                    case 'Cansado':
+                      _message = 'Asegúrate de descansar bien.';
+                      break;
+                  }
+                });
+                _controller.reset();
+                _controller.forward();
+              },
+            ),
+            if (_message != null)
+              FadeTransition(
+                opacity: _animation,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    _message!,
+                    style: TextStyle(fontSize: 24),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
