@@ -3,23 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => MyAppState(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key});
 
   @override
   Widget build(BuildContext context) {
+    var appState =
+        Provider.of<MyAppState>(context); // Obtener el estado de la aplicación
     return ChangeNotifierProvider(
-      create: (context) => MyAppState(),
+      create: (context) => appState,
       child: MaterialApp(
-        title: 'Namer App',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme:
-              ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 43, 22, 231)),
-        ),
+        title: 'Chansa',
+        theme: appState.isDarkMode
+            ? ThemeData.dark()
+            : appState.isLightMode
+                ? ThemeData.light()
+                : ThemeData.light(),
         home: MyHomePage(),
       ),
     );
@@ -29,6 +36,16 @@ class MyApp extends StatelessWidget {
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   var history = <WordPair>[];
+  var _darkMode = false;
+  var _lightMode = true;
+  bool get isDarkMode => _darkMode;
+  bool get isLightMode => !_darkMode;
+
+  void updateTheme(bool isDarkMode, [bool isLightMode = false]) {
+    _darkMode = isDarkMode;
+    _lightMode = !isDarkMode;
+    notifyListeners();
+  }
 
   GlobalKey? historyListKey;
 
@@ -78,8 +95,11 @@ class _MyHomePageState extends State<MyHomePage> {
       case 1:
         page = FavoritesPage();
         break;
+      case 2:
+        page = SettingsPage();
+        break;
       default:
-        throw UnimplementedError('no widget for $selectedIndex');
+        throw UnimplementedError('No hay widget para $selectedIndex');
     }
 
     // The container for the current page, with its background color
@@ -87,7 +107,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var mainArea = ColoredBox(
       color: colorScheme.surfaceVariant,
       child: AnimatedSwitcher(
-        duration: Duration(milliseconds: 200),
+        duration: Duration(milliseconds: 340),
         child: page,
       ),
     );
@@ -112,6 +132,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         icon: Icon(Icons.favorite),
                         label: 'Favoritos',
                       ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.settings),
+                        label: 'Configuración',
+                      )
                     ],
                     currentIndex: selectedIndex,
                     onTap: (value) {
@@ -137,6 +161,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       NavigationRailDestination(
                         icon: Icon(Icons.favorite),
                         label: Text('Favoritos'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.settings),
+                        label: Text('Configuración'),
                       ),
                     ],
                     selectedIndex: selectedIndex,
@@ -296,6 +324,75 @@ class FavoritesPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class DarkPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Text('Modo oscuro'),
+    );
+  }
+}
+
+class SettingsPage extends StatefulWidget {
+  @override
+  _SettingsPageState createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State {
+  bool _darkMode = false;
+  bool _lightMode = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: _darkMode
+          ? ThemeData.dark()
+          : _lightMode
+              ? ThemeData.light()
+              : ThemeData.light(),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Configuración'),
+        ),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Modo oscuro'), // Aquí se agrega el texto "Modo oscuro"
+                Switch(
+                  value: _darkMode,
+                  onChanged: (value) {
+                    setState(() {
+                      _darkMode = value;
+                      _lightMode = !value;
+                    });
+                    // Notificar a los widgets que escuchan el tema sobre el cambio
+                    Provider.of<MyAppState>(context, listen: false)
+                        .updateTheme(_darkMode);
+                    Provider.of<MyAppState>(context, listen: false)
+                        .updateTheme(_lightMode);
+                  },
+                ),
+              ],
+            ),
+            AboutDialog(
+              applicationName: 'Chansa',
+              applicationVersion: '1.0.0',
+              applicationIcon: Icon(Icons.favorite),
+              children: [
+                Text('Chansa es una aplicación de prueba.'),
+                Text('Hecha por: Chansa'),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
