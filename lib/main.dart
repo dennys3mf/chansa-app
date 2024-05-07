@@ -2,7 +2,8 @@ import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:math';
-import 'package:page_transition/page_transition.dart';
+import 'package:chansa_app/openai.dart';
+
 
 void main() {
   runApp(
@@ -117,6 +118,9 @@ class _MyHomePageState extends State<MyHomePage> {
       case 3:
         page = MoodSelector();
         break;
+      case 4:
+        page = ChatPage();
+        break;
       default:
         throw UnimplementedError('No hay widget para $selectedIndex');
     }
@@ -142,38 +146,41 @@ class _MyHomePageState extends State<MyHomePage> {
                 Expanded(child: mainArea),
                 SafeArea(
                   child: BottomNavigationBar(
-                     items: [
+                    items: [
                       BottomNavigationBarItem(
                         icon: Icon(Icons.home,
                             color: Colors.black), // Forzar el color del ícono
                         label: 'Inicio',
-                            backgroundColor:
+                        backgroundColor:
                             Colors.white, // Forzar el color de fondo
-  
                       ),
                       BottomNavigationBarItem(
                         icon: Icon(Icons.favorite,
                             color: Colors.black), // Forzar el color del ícono
                         label: 'Favoritos',
-                            backgroundColor:
+                        backgroundColor:
                             Colors.white, // Forzar el color de fondo
-  
                       ),
                       BottomNavigationBarItem(
                         icon: Icon(Icons.settings,
                             color: Colors.black), // Forzar el color del ícono
                         label: 'Configuración',
-                              backgroundColor:
+                        backgroundColor:
                             Colors.white, // Forzar el color de fondo
-
                       ),
                       BottomNavigationBarItem(
                         icon: Icon(Icons.mood,
                             color: Colors.black), // Forzar el color del ícono
                         label: 'Estado de ánimo',
-                              backgroundColor:
+                        backgroundColor:
                             Colors.white, // Forzar el color de fondo
-
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.chat,
+                            color: Colors.black), // Forzar el color del ícono
+                        label: 'ChatMood',
+                        backgroundColor:
+                            Colors.white, // Forzar el color de fondo
                       ),
                     ],
                     currentIndex: selectedIndex,
@@ -212,6 +219,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       NavigationRailDestination(
                         icon: Icon(Icons.mood),
                         label: Text('Estado de ánimo'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.chat),
+                        label: Text('ChatMood'),
                       ),
                     ],
                     selectedIndex: selectedIndex,
@@ -499,6 +510,7 @@ class _HistoryListViewState extends State<HistoryListView> {
     );
   }
 }
+
 class MoodSelector extends StatefulWidget {
   @override
   _MoodSelectorState createState() => _MoodSelectorState();
@@ -608,6 +620,66 @@ class _MoodSelectorState extends State<MoodSelector>
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class ChatPage extends StatefulWidget {
+  @override
+  _ChatPageState createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
+  final _controller = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  List<String> _messages = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Chat Page'),
+      ),
+      body: Form(
+        key: _formKey,
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: ListView.builder(
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(_messages[index]),
+                  );
+                },
+              ),
+            ),
+            TextFormField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Escribe un mensaje',
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, escribe un mensaje';
+                }
+                return null;
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.send),
+              onPressed: () {
+                if (_formKey.currentState?.validate() ?? false) {
+                  setState(() {
+                    _messages.add(_controller.text);
+                    _controller.clear();
+                  });
+                }
+              },
+            ),
+          ],
         ),
       ),
     );

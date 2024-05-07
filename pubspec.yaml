@@ -12,17 +12,20 @@ dependencies:
   flutter:
     sdk: flutter
   shared_preferences: ^2.0.0
-  tflite: any
   page_transition: ^2.0.4
   english_words: ^4.0.0
   provider: ^6.0.0
+  http: 1.2.1
+  tenor: 1.0.9
+  
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   flutter_lints: ^2.0.0
-
+  flutter_chat_bubble: ^1.1.1
+  
 flutter:
   assets:
     - assets/images/
